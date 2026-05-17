@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Re:Cover</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --grey-dark: #1c1f20;
+    --grey-mid: #2e3335;
+    --grey-light: #4a5254;
+    --grey-muted: #8a9396;
+    --aqua: #5fc9c0;
+    --aqua-bright: #7de8df;
+    --aqua-dim: #3a9e96;
+    --aqua-glow: rgba(95, 201, 192, 0.18);
+    --white: #f0f5f5;
+    --white-dim: rgba(240,245,245,0.7);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--grey-dark);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── SCREENS ── */
+  .screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+  }
+  .screen.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* Background mesh */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 80% 20%, rgba(95,201,192,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 15% 80%, rgba(95,201,192,0.08) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .screen > * { position: relative; z-index: 1; }
+
+  /* ── WELCOME ── */
+  #screen-welcome {
+    cursor: pointer;
+    gap: 0;
+  }
+  #screen-welcome .tag {
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--aqua);
+    margin-bottom: 1.6rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.3s forwards;
+  }
+  #screen-welcome h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(5rem, 14vw, 10rem);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    opacity: 0;
+    animation: fadeUp 0.9s 0.5s forwards;
+  }
+  #screen-welcome h1 span {
+    color: var(--aqua);
+  }
+  #screen-welcome .hint {
+    margin-top: 2.8rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--grey-muted);
+    opacity: 0;
+    animation: fadeUp 0.8s 1s forwards, pulse 2.5s 1.8s infinite;
+  }
+
+  /* ── URGENCY ── */
+  #screen-urgency { gap: 2.8rem; }
+  #screen-urgency .question {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    text-align: center;
+    color: var(--white);
+    max-width: 520px;
+    line-height: 1.25;
+  }
+  .options {
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .opt-btn {
+    background: var(--grey-mid);
+    border: 1.5px solid var(--grey-light);
+    color: var(--white-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    padding: 1rem 2.2rem;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .opt-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--aqua);
+    opacity: 0;
+    transition: opacity 0.22s;
+  }
+  .opt-btn:hover {
+    border-color: var(--aqua);
+    color: var(--aqua-bright);
+    box-shadow: 0 0 20px var(--aqua-glow);
+    transform: translateY(-2px);
+  }
+
+  /* ── DESCRIBE ── */
+  #screen-describe { gap: 2rem; padding: 2rem; width: 100%; max-width: 680px; }
+  #screen-describe .question {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.4rem, 3.5vw, 2.1rem);
+    text-align: center;
+    line-height: 1.3;
+  }
+  #screen-describe .sub {
+    font-size: 0.82rem;
+    color: var(--grey-muted);
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+  #issue-text {
+    width: 100%;
+    max-width: 600px;
+    height: 180px;
+    background: var(--grey-mid);
+    border: 1.5px solid var(--grey-light);
+    border-radius: 4px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    padding: 1.2rem 1.4rem;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+  #issue-text::placeholder { color: var(--grey-muted); }
+  #issue-text:focus { border-color: var(--aqua); box-shadow: 0 0 16px var(--aqua-glow); }
+
+  .submit-btn {
+    background: var(--aqua-dim);
+    border: none;
+    color: var(--grey-dark);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.9rem 2.8rem;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.22s;
+  }
+  .submit-btn:hover {
+    background: var(--aqua);
+    box-shadow: 0 0 24px var(--aqua-glow);
+    transform: translateY(-2px);
+  }
+
+  /* ── LOADING ── */
+  #screen-loading { gap: 2rem; }
+  .loading-word {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.5rem, 8vw, 5.5rem);
+    letter-spacing: -0.01em;
+    color: var(--white);
+  }
+  .loading-word span {
+    display: inline-block;
+    animation: waveChar 1.4s infinite ease-in-out;
+  }
+  .loading-word span:nth-child(1) { animation-delay: 0s; }
+  .loading-word span:nth-child(2) { animation-delay: 0.08s; }
+  .loading-word span:nth-child(3) { animation-delay: 0.16s; }
+  .loading-word span:nth-child(4) { animation-delay: 0.24s; }
+  .loading-word span:nth-child(5) { animation-delay: 0.32s; }
+  .loading-word span:nth-child(6) { animation-delay: 0.40s; }
+  .loading-word span:nth-child(7) { animation-delay: 0.48s; }
+  .loading-word span:nth-child(8) { animation-delay: 0.56s; }
+
+  .loading-bar-wrap {
+    width: 260px;
+    height: 2px;
+    background: var(--grey-mid);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .loading-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--aqua-dim), var(--aqua-bright));
+    border-radius: 99px;
+    transition: width 0.1s linear;
+  }
+
+  /* ── RESULT ── */
+  #screen-result { gap: 0; padding: 2rem; text-align: center; max-width: 640px; }
+  .result-level {
+    font-size: 0.72rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--aqua);
+    margin-bottom: 1.4rem;
+  }
+  .result-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1.4rem;
+    animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+  .result-main {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    line-height: 1.3;
+    margin-bottom: 1.6rem;
+    color: var(--white);
+  }
+  .result-detail {
+    font-size: 0.88rem;
+    color: var(--grey-muted);
+    line-height: 1.7;
+    border-top: 1px solid var(--grey-mid);
+    padding-top: 1.4rem;
+    margin-top: 0.4rem;
+  }
+  .result-tip {
+    margin-top: 1.6rem;
+    background: var(--grey-mid);
+    border-left: 3px solid var(--aqua);
+    border-radius: 3px;
+    padding: 1rem 1.4rem;
+    text-align: left;
+    font-size: 0.85rem;
+    color: var(--white-dim);
+    line-height: 1.6;
+  }
+  .result-tip strong {
+    color: var(--aqua);
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .restart-btn {
+    margin-top: 2.4rem;
+    background: transparent;
+    border: 1px solid var(--grey-light);
+    color: var(--grey-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.7rem 1.8rem;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .restart-btn:hover { border-color: var(--aqua); color: var(--aqua); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50%       { opacity: 1; }
+  }
+  @keyframes waveChar {
+    0%, 100% { transform: translateY(0); color: var(--white); }
+    50%       { transform: translateY(-10px); color: var(--aqua-bright); }
+  }
+  @keyframes popIn {
+    from { transform: scale(0.4); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+
+  /* divider line decoration */
+  .line-deco {
+    width: 48px;
+    height: 1.5px;
+    background: var(--aqua-dim);
+    border-radius: 99px;
+  }
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: WELCOME -->
+<div class="screen active" id="screen-welcome" onclick="goTo('urgency')">
+  <p class="tag">Injury Assessment System</p>
+  <h1>Re<span>:</span>Cover</h1>
+  <p class="hint">Tap anywhere to begin</p>
+</div>
+
+<!-- SCREEN 2: URGENCY -->
+<div class="screen" id="screen-urgency">
+  <p class="question">How urgent is your situation?</p>
+  <div class="line-deco"></div>
+  <div class="options">
+    <button class="opt-btn" onclick="selectUrgency('light')">Light</button>
+    <button class="opt-btn" onclick="selectUrgency('moderate')">Moderate</button>
+    <button class="opt-btn" onclick="selectUrgency('urgent')">Urgent</button>
+  </div>
+</div>
+
+<!-- SCREEN 3: DESCRIBE -->
+<div class="screen" id="screen-describe">
+  <p class="question">Describe your issue with as much detail as possible.</p>
+  <p class="sub">Include symptoms, location of pain, and how it happened.</p>
+  <textarea id="issue-text" placeholder="e.g. I twisted my ankle during practice and it started swelling immediately..."></textarea>
+  <button class="submit-btn" onclick="submitDescription()">Analyze →</button>
+</div>
+
+<!-- SCREEN 4: LOADING -->
+<div class="screen" id="screen-loading">
+  <div class="loading-word">
+    <span>A</span><span>n</span><span>a</span><span>l</span><span>y</span><span>z</span><span>i</span><span>n</span><span>g</span>
+  </div>
+  <div class="loading-bar-wrap">
+    <div class="loading-bar-fill" id="loading-bar"></div>
+  </div>
+</div>
+
+<!-- SCREEN 5: RESULT -->
+<div class="screen" id="screen-result">
+  <p class="result-level" id="result-level">Assessment</p>
+  <div class="result-icon" id="result-icon"></div>
+  <p class="result-main" id="result-main"></p>
+  <div id="result-tip-box" class="result-tip" style="display:none">
+    <strong>Detected keyword tip</strong>
+    <span id="result-tip-text"></span>
+  </div>
+  <p class="result-detail" id="result-detail"></p>
+  <button class="restart-btn" onclick="restart()">← Start over</button>
+</div>
+
+<script>
+  let urgency = '';
+
+  function goTo(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+  }
+
+  function selectUrgency(level) {
+    urgency = level;
+    goTo('describe');
+  }
+
+  function submitDescription() {
+    const text = document.getElementById('issue-text').value.toLowerCase().trim();
+    if (!text) {
+      document.getElementById('issue-text').focus();
+      return;
+    }
+    goTo('loading');
+    startLoading(text);
+  }
+
+  function startLoading(text) {
+    const bar = document.getElementById('loading-bar');
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 4 + 1.5;
+      if (progress >= 100) {
+        progress = 100;
+        bar.style.width = '100%';
+        clearInterval(interval);
+        setTimeout(() => showResult(text), 400);
+      } else {
+        bar.style.width = progress + '%';
+      }
+    }, 80);
+  }
+
+  function showResult(text) {
+    // Keyword detection
+    const hasBuzz = (words) => words.some(w => text.includes(w));
+    const hasSprain  = hasBuzz(['sprain', 'twisted', 'rolled', 'twist']);
+    const hasSwollen = hasBuzz(['swollen', 'swelling', 'swell', 'puffy', 'inflam']);
+    const hasBleed   = hasBuzz(['blood', 'bleed', 'bleeding', 'cut', 'wound', 'gash']);
+
+    // Determine result based on urgency + buzzwords
+    let level, icon, main, detail, tip = null;
+
+    // Buzzword override logic: if a buzzword suggests higher severity than chosen, escalate display
+    if (urgency === 'urgent' || hasBleed) {
+      level = 'Severe';
+      icon = '🩸';
+      main = 'Rush over to room 3 and stop the bleeding with a clean roll of bandages or gauze.';
+      detail = 'A medical professional will be there immediately.';
+      if (hasBleed) tip = 'Keyword detected: signs of bleeding. Apply firm, steady pressure with a clean cloth or gauze and do not remove it once applied.';
+    } else if (urgency === 'moderate' || hasSwollen) {
+      level = 'Moderate';
+      icon = '🧊';
+      main = 'Sit down in room 2 and hold an ice pack on the swollen area.';
+      detail = 'A professional will be on the way shortly.';
+      if (hasSwollen) tip = 'Keyword detected: swelling. Elevate the affected area above heart level if possible, and apply ice for 20 minutes on, 20 minutes off.';
+    } else {
+      level = 'Light';
+      icon = '🔵';
+      main = 'Sit down in room 1 and gently try to move the injured part in circular motions.';
+      detail = 'A professional will be here soon.';
+      if (hasSprain) tip = 'Keyword detected: possible sprain. Avoid putting full weight on the area and keep movement slow and controlled.';
+    }
+
+    document.getElementById('result-level').textContent = level + ' Injury';
+    document.getElementById('result-icon').textContent = icon;
+    document.getElementById('result-main').textContent = main;
+    document.getElementById('result-detail').textContent = detail;
+
+    const tipBox  = document.getElementById('result-tip-box');
+    const tipText = document.getElementById('result-tip-text');
+    if (tip) {
+      tipText.textContent = tip;
+      tipBox.style.display = 'block';
+    } else {
+      tipBox.style.display = 'none';
+    }
+
+    goTo('result');
+  }
+
+  function restart() {
+    urgency = '';
+    document.getElementById('issue-text').value = '';
+    document.getElementById('loading-bar').style.width = '0%';
+    goTo('welcome');
+  }
+</script>
+</body>
+</html>
